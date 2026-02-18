@@ -51,8 +51,11 @@ export default function EditorPage() {
     }, [id])
 
     const handleTitleChange = (e) => {
-        setTitle(e.target.value)
-        // TODO: Debounce title updates
+        const newTitle = e.target.value
+        setTitle(newTitle)
+        if (currentPost) {
+            setCurrentPost({ ...currentPost, title: newTitle })
+        }
     }
 
     const handlePublish = async () => {
@@ -60,6 +63,15 @@ export default function EditorPage() {
 
         setIsPublishing(true)
         try {
+            // 1. Save latest changes first (title & content)
+            // We need to ensure the backend has the latest title/content before publishing
+            // because publishPost only changes the status.
+            await usePostsStore.getState().updatePost(currentPost._id, {
+                title: title,
+                // Content is handled by AutoSave, but the title comes from local state
+            })
+
+            // 2. Publish
             await publishPost(currentPost._id)
             alert('Post published successfully!')
             navigate('/')
