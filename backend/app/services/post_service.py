@@ -5,9 +5,9 @@ from ..database import get_database
 from ..models.post import PostCreate, PostUpdate, PostInDB
 
 class PostService:
-    def __init__(self):
-        self.db = get_database()
-        self.collection = self.db.posts
+    @property
+    def collection(self):
+        return get_database().posts
 
     async def create_post(self, post: PostCreate) -> PostInDB:
         """Create a new post"""
